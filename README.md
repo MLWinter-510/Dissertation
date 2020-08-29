@@ -79,3 +79,110 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
 
 }
 
+
+Code to run Thompson Sampling simulations
+
+Thompson_Sampling = function(k, sample_size, block, no_treat, prob_vec, prior_mat){
+
+set.seed(k)
+
+treatment = vector()
+
+outcome = vector()
+
+no_s = matrix(0L, no_treat, 1)
+
+no_f = matrix(0L, no_treat, 1)
+
+results = matrix(0L, nrow = no_treat, ncol = 2)
+
+
+for(t in 0:((sample_size/block) - 1)){
+    
+    # Calculating the allocation probabilities for each treatment at the start of each block   
+    
+    if(no_treat == 2){
+    
+    theta_2 = rbeta(100, no_s[2] + prior_mat[2,1], no_f[2] + prior_mat[2,2])
+    
+    theta_1 = rbeta(100, no_s[1] + prior_mat[1,1], no_f[1] + prior_mat[1,2])
+    
+    theta = cbind(theta_2, theta_1)
+    
+    alloc_exp = sum(theta[,1] > theta[,2])/(nrow(theta))
+    
+    alloc_p = c(1-alloc_exp, alloc_exp)
+    
+    }else{
+    
+    theta_3 = rbeta(100, no_s[3] + prior_mat[3,1], no_f[3] + prior_mat[3,2])
+    
+    theta_2 = rbeta(100, no_s[2] + prior_mat[2,1], no_f[2] + prior_mat[2,2])
+    
+    theta_1 = rbeta(100, no_s[1] + prior_mat[1,1], no_f[1] + prior_mat[1,2])
+    
+    theta = cbind(theta_3, theta_2, theta_1)
+    
+    alloc_exp2 = sum((theta[,1] > theta[,2])&(theta[,1] > theta[,3]))/(nrow(theta)) # allocate treatment 2
+    
+    alloc_exp1 = sum((theta[,2] > theta[,1])&(theta[,2] > theta[,3]))/(nrow(theta)) # allocate teatment 1
+    
+    alloc_con = sum((theta[,3] > theta[,2])&(theta[,3] > theta[,1]))/(nrow(theta))  # allocate control  
+    
+    alloc_p = c(alloc_con, alloc_exp1, alloc_exp2)
+    
+    }
+    
+    
+    for(p in 1:block){
+    
+    treatment[p + (t*block)] = sample(no_treat, size = 1, replace = TRUE, prob = alloc_p)
+    
+    for (k in 1:no_treat){
+    
+    if(treatment[p + (t*block)] == k ){
+    
+    outcome[p + (t*block)] = sample(c(1,0), size = 1, replace = TRUE, prob = c(prob_vec[k], 1-prob_vec[k]))}
+    
+    }
+    
+    if(outcome[p + (t*block)] == 1){
+    
+    no_s[treatment[p + (t*block)]] = no_s[treatment[p + (t*block)]] + 1
+    
+    }else{
+    
+    no_f[treatment[p + (t*block)]] = no_f[treatment[p + (t*block)]] + 1} 
+    
+    }
+    }
+    
+    
+  results[,1] = no_s[,1]
+  
+  results[,2] = no_f[,1]
+  
+  outcome = c(results[,1], results[,2])
+  
+  p.values = rep(NA, no_treat-1)
+  
+  for (i in 2:no_treat) {
+  
+  if(nrow(results) == 2){
+  
+  test.results = results
+  
+  }else{
+  
+  test.results = rbind(results[1,], results[i,])}
+  
+  test.res = fisher.test(test.results, alternative = "less")
+  
+  p.values[i-1] = test.res$p.value}
+  
+  p_val = p.adjust(p.values, method = "bonferroni")
+  
+  output = list("success" = no_s, "failure" =  no_f, "results" = results, "p.values" = p.values)
+  
+  return(c(outcome, p_val))
+}
