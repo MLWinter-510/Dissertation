@@ -584,7 +584,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   
   for (t in 0:((sample_size/block) - 1)) {
   
-  # Calculating the allocation probabilities for each treatment/covariate combination at the start of each block
+  #Calculating the allocation probabilities for each treatment/covariate combination at the start of each block
   
   theta_01 = rbeta(100, no_s[1,2] + prior_mat0[2,1], no_f[1,2] + prior_mat0[2,2])
   
