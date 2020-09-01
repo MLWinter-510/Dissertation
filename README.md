@@ -22,6 +22,8 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
     
     treatment = sample(no_treat, sample_size, prob = rep(1/no_treat, no_treat), replace = TRUE) # equal probability of being assigned
     
+    #  rep(1:no_treat, each = sample_size/no_treat) replace above with this if want exactly equal allocation
+    
     for(p in 1:block){
     
     for (k in 1:no_treat){
@@ -30,7 +32,7 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
     
     outcome[p + (t*block)] = sample(c(1,0), size = 1, replace = TRUE, prob = c(prob_vec[k], 1 - prob_vec[k]))
     
-    } 
+      } 
     
     }
     
@@ -42,7 +44,7 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
     
     no_f[treatment[p + (t*block)]] = no_f[treatment[p + (t*block)]] + 1} 
     
-    } 
+      } 
     
     }
     
@@ -71,11 +73,9 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
   
   p.values[i-1] = test.res$p.value}
   
-  p_val = p.adjust(p.values, method = "bonferroni")
-  
   output = list("success" = no_s, "failure" =  no_f, "results" = results, "p.values" = p.values)
   
-  return(c(outcome, p_val))
+  return(c(outcome, p.values))
 
 }
 
@@ -154,7 +154,7 @@ for(t in 0:((sample_size/block) - 1)){
     
     no_f[treatment[p + (t*block)]] = no_f[treatment[p + (t*block)]] + 1} 
     
-    }
+      }
     }
     
     
@@ -180,11 +180,9 @@ for(t in 0:((sample_size/block) - 1)){
   
   p.values[i-1] = test.res$p.value}
   
-  p_val = p.adjust(p.values, method = "bonferroni")
-  
   output = list("success" = no_s, "failure" =  no_f, "results" = results, "p.values" = p.values)
   
-  return(c(outcome, p_val))
+  return(c(outcome, p.values))
 }
 
 
@@ -235,9 +233,9 @@ if (z[j, (t+1)] == v){
           
           }else{
           
-          kmax = (S-1)*no_cat + v}
+          kmax = (S-1)*no_cat + v }
           
-        } 
+          } 
         
         }
         
@@ -260,7 +258,7 @@ if (z[j, (t+1)] == v){
       
       selected[j, block+1] = z[j,1]
     
-    } 
+      } 
     
     }
   
@@ -270,7 +268,9 @@ if (z[j, (t+1)] == v){
   
   for (k in 1:no_treat){
   
-  pi_comb_arms[j,k] = sum(selected[j, 1:block] == k)}
+  pi_comb_arms[j,k] = sum(selected[j, 1:block] == k)
+  
+  }
   
   pi_comb_arms[j, no_treat + 1] = selected[j, block + 1]
   
@@ -327,7 +327,9 @@ if (z[j, (t+1)] == v){
 # Code to run FLGI Simulations
 
 FLGI = function(k, sample_size, block, no_treat, prob_vec, prior_mat){
-  set.seed(k)
+  
+
+set.seed(k)
 
 if (floor((sample_size/block))*block != sample_size){
 
@@ -355,6 +357,7 @@ no_f = matrix(0L, no_treat, 1)
 
 results = matrix(0L, nrow = no_treat, ncol = 2)
 
+
 for (t in 0:((sample_size/block) - 1)){
 
 alloc_p = matrix(0L,1 ,no_treat)
@@ -366,6 +369,7 @@ alloc_p = Input_alloc(I, block, 100, 1, no_treat)
 allocation_prob = rbind(allocation_prob, alloc_p)
 
 alloc_p = matrix((c(cumsum(c(0, alloc_p[])))), byrow = TRUE, nrow = 1)
+
 
 Pob = c()
 
@@ -397,13 +401,15 @@ outcome[p + (t*block)] = 1
 
 no_f[k,1] = no_f[k,1] + 1
 
-outcome[p + (t*block)] = 0 } }
+outcome[p + (t*block)] = 0 } 
+      }
 
-} 
+    } 
+
+  }
 
 }
 
-}
 
 results[,1] = no_s[,1]
 
@@ -411,13 +417,14 @@ results[,2] = no_f[,1]
 
 outcome = c(results[,1], results[,2])
 
+
 p.values = rep(NA, no_treat-1)
 
 for (i in 2:no_treat) {
 
-if(nrow(results) == 2)
+if(nrow(results) == 2){
 
-{test.results = results
+test.results = results
 
 }else{
 
@@ -429,19 +436,17 @@ p.values[i-1] = test.res$p.value
 
 }
 
-p_val = p.adjust(p.values, method = "bonferroni")
-
 output = list("success" = no_s, "failure" =  no_f, "results" = results, "p.values" = p.values)
 
-return(c(outcome, p_val))
+return(c(outcome, p.values))
 
 }
 
 
 # Code to run CARA Equal Randomisations simulations
 
-
 CARA_ER = function(k,sample_size, block, no_treat, prob_mat, q){
+
 
 set.seed(k)
 
@@ -460,7 +465,6 @@ results_0 = matrix(0L, nrow = no_treat, ncol = 2)
 results_1 = matrix(0L, nrow = no_treat, ncol = 2)
 
 
-
 for (t in 0:((sample_size/block) - 1)) {
 
 for(p in 1:block){
@@ -477,6 +481,7 @@ treatment[p + (t*block)] = sample(no_treat, 1, prob = rep(1/no_treat, no_treat),
 
 }
 
+
 for(p in 1:block){
 
 for (k in 1:no_treat){
@@ -485,7 +490,7 @@ if(treatment[p + (t*block)] == k ){
 
 outcome[p + (t*block)] = sample(c(1,0), size = 1, replace = TRUE, prob = c(prob_mat[cov_pos[p + (t*block)] + 1, k], 1 - prob_mat[cov_pos[p + (t*block)] + 1, k]))
 
-} 
+  } 
 
 }
 
@@ -495,9 +500,11 @@ no_s[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] = no_s[cov_pos[p + (t
 
 }else{
 
-no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] = no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] + 1} }
+no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] = no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] + 1} 
+  }
 
 }
+
 
 results_0[,1] = no_s[1,] # covariate negative
 
@@ -557,6 +564,7 @@ return(All)
 
 CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_mat1, q){
   
+  
   set.seed(k)
   
   no_s = matrix(0L, ncol = no_treat, nrow = 2)
@@ -573,6 +581,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   
   results_1 = matrix(0L, nrow = no_treat, ncol = 2)
   
+  
   for (t in 0:((sample_size/block) - 1)) {
   
   # Calculating the allocation probabilities for each treatment/covariate combination at the start of each block
@@ -584,6 +593,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   theta_neg = cbind(theta_01, theta_00)
   
   allocp_neg = sum(theta_neg[,1] > theta_neg[,2])/(nrow(theta_neg))
+  
   
   theta_11 = rbeta(100, no_s[2,2] + prior_mat1[2,1], no_f[2,2] + prior_mat1[2,2])
   
@@ -620,9 +630,11 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   
   }else{
   
-  no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] = no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] + 1} }
+  no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] = no_f[cov_pos[p + (t*block)] + 1, treatment[p + (t*block)]] + 1} 
+    }
   
   }
+  
   
   results_0[,1] = no_s[1,] # covariate negative
   
@@ -645,15 +657,18 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   
   } # -1 is to make treatments between 0 and 1
   
+  
   Table = data.frame(outcome, trt, cov_pos)
   
   Model = glm(outcome ~ trt + cov_pos + trt:cov_pos, family = binomial, data = Table)
+  
   
   coef_vec = coef(Model) # extracting model coefficients
   
   pval_vec = coef(Model) #sets up p value vector with NA in right place
   
   pval_vec[!is.na(pval_vec)] = coef(summary(Model))[,4] #replaces non-NA elements with actual p values
+  
   
   #function to merge the two vectors
   
@@ -669,6 +684,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
   
   }
   
+  
   Model_outcome =  merge(coef_vec,pval_vec)
   
   All = c(Negative_outcome, Positive_outcome, Model_outcome)
@@ -683,6 +699,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
 
 CARA_FLGI = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_mat1, q){
 
+
 set.seed(k)
 
 if (floor((sample_size/block))*block != sample_size){
@@ -690,6 +707,7 @@ if (floor((sample_size/block))*block != sample_size){
 stop("Block Size must divide sample size")
 
 }
+
 
 cov_pos = c()
 
@@ -718,6 +736,7 @@ cov_pos[p + (t*block)] = sample(c(1,0), size = 1, prob = c(q, 1-q), replace = TR
 
 }
 
+
 alloc_p = matrix(0L,1 ,no_treat)
 
 for(i in 1:no_treat){
@@ -734,7 +753,7 @@ I1 = matrix(c(no_s[2,] + prior_mat1[i,1] + 1, no_f[2,] + prior_mat1[i,2] + 1), b
 
 alloc_p = Input_alloc(I1, block, 100, 1, no_treat)
 
-}
+  }
 
 }
 
@@ -742,11 +761,14 @@ allocation_prob = rbind(allocation_prob, alloc_p)
 
 alloc_p = matrix((c(cumsum(c(0, alloc_p[])))), byrow = TRUE, nrow = 1)
 
+
 Pob = c()
 
 Pos = c()
 
+
 for (p in 1:block){
+
 
 Pob[p] = runif(1)
 
@@ -774,13 +796,14 @@ no_f[ cov_pos[p + (t*block)] + 1,k] = no_f[ cov_pos[p + (t*block)] + 1,k] + 1
 
 outcome[p + (t*block)] = 0 } 
 
-} 
+      } 
 
-} 
+    } 
 
-} 
+  } 
 
 }
+
 
 results_0[,1] = no_s[1,] # covariate negative
 
@@ -799,11 +822,13 @@ Table = data.frame(outcome, treatment, cov_pos)
 
 Model = glm(outcome ~ treatment + cov_pos + treatment:cov_pos, family = binomial, data = Table)
 
+
 coef_vec = coef(Model) # extracting model coefficients
 
 pval_vec = coef(Model) #sets up p value vector with NA in right place
 
 pval_vec[!is.na(pval_vec)] = coef(summary(Model))[,4] #replaces non-NA elements with actual p values
+
 
 #function to merge the two vectors
 
@@ -818,6 +843,7 @@ out[seq(from=2,by=2,length.out = length(v2))] = v2
 return(out)
 
 }
+
 
 Model_outcome =  merge(coef_vec,pval_vec)
 
