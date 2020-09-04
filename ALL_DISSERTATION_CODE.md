@@ -1,7 +1,7 @@
 # Dissertation
 All code to run the simulations in my Masters Dissertation
 
-# Code to run Equal Randomisation simulations
+# Code to run Equal Randomisation Simulations
 
 Equal_random = function(k, sample_size, block, no_treat, prob_vec){
   
@@ -80,7 +80,7 @@ Equal_random = function(k, sample_size, block, no_treat, prob_vec){
 }
 
 
-# Code to run Thompson Sampling simulations
+# Code to run Thompson Sampling Simulations
 
 Thompson_Sampling = function(k, sample_size, block, no_treat, prob_vec, prior_mat){
 
@@ -443,7 +443,7 @@ return(c(outcome, p.values))
 }
 
 
-# Code to run CARA Equal Randomisations simulations
+# Code to run CARA Equal Randomisation Simulations
 
 CARA_ER = function(k,sample_size, block, no_treat, prob_mat, q){
 
@@ -560,7 +560,7 @@ return(All)
 }
 
 
-# Code to run CARA Thompson Sampling simulations
+# Code to run CARA Thompson Sampling Simulations
 
 CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_mat1, q){
   
@@ -693,7 +693,7 @@ CARA_TS = function(k, sample_size, block, no_treat, prob_mat, prior_mat0, prior_
 }
 
 
-# Code to run CARA Forward-Looking Gittins Index simulations
+# Code to run CARA Forward-Looking Gittins Index Simulations
 
 # Gittins_mat and Input_alloc are the same as in the non-adjusted FLGI code 
 
